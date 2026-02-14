@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shiptivity Analytics Report — Module 3</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-primary: #0f0f1a;
+        --bg-secondary: #1a1a2e;
+        --bg-card: #16213e;
+        --bg-card-hover: #1a2744;
+        --accent-blue: #4f8cff;
+        --accent-purple: #a855f7;
+        --accent-pink: #ec4899;
+        --accent-green: #10b981;
+        --accent-orange: #f59e0b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --border: rgba(255, 255, 255, 0.06);
+        --glow-blue: rgba(79, 140, 255, 0.15);
+        --glow-purple: rgba(168, 85, 247, 0.15);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Animated gradient background */
+      body::before {
+        content: "";
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background:
+          radial-gradient(
+            ellipse at 20% 50%,
+            var(--glow-blue) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 80% 20%,
+            var(--glow-purple) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 50% 80%,
+            rgba(236, 72, 153, 0.08) 0%,
+            transparent 50%
+          );
+        animation: bgShift 20s ease-in-out infinite alternate;
+        z-index: -1;
+      }
+
+      @keyframes bgShift {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+        100% {
+          transform: translate(-5%, 3%) rotate(3deg);
+        }
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: 56px;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      .header .badge {
+        display: inline-block;
+        background: linear-gradient(
+          135deg,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 50px;
+        margin-bottom: 20px;
+      }
+
+      .header h1 {
+        font-size: 42px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 12px;
+        line-height: 1.2;
+      }
+
+      .header p {
+        color: var(--text-secondary);
+        font-size: 17px;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      /* Stats Row */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 48px;
+        animation: fadeInUp 0.8s ease-out 0.1s both;
+      }
+
+      .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 16px 16px 0 0;
+      }
+
+      .stat-card:nth-child(1)::before {
+        background: linear-gradient(
+          90deg,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+      }
+      .stat-card:nth-child(2)::before {
+        background: linear-gradient(
+          90deg,
+          var(--accent-green),
+          var(--accent-blue)
+        );
+      }
+      .stat-card:nth-child(3)::before {
+        background: linear-gradient(
+          90deg,
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+      }
+      .stat-card:nth-child(4)::before {
+        background: linear-gradient(
+          90deg,
+          var(--accent-orange),
+          var(--accent-pink)
+        );
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .stat-card .stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+
+      .stat-card:nth-child(1) .stat-value {
+        color: var(--accent-blue);
+      }
+      .stat-card:nth-child(2) .stat-value {
+        color: var(--accent-green);
+      }
+      .stat-card:nth-child(3) .stat-value {
+        color: var(--accent-purple);
+      }
+      .stat-card:nth-child(4) .stat-value {
+        color: var(--accent-orange);
+      }
+
+      .stat-card .stat-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .stat-card .stat-change {
+        font-size: 12px;
+        margin-top: 8px;
+        font-weight: 600;
+      }
+
+      .stat-change.positive {
+        color: var(--accent-green);
+      }
+      .stat-change.negative {
+        color: var(--accent-pink);
+      }
+
+      /* Chart Cards */
+      .chart-section {
+        margin-bottom: 48px;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+      }
+
+      .chart-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 32px;
+        transition: all 0.3s ease;
+      }
+
+      .chart-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      }
+
+      .chart-card h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chart-card h2 .emoji {
+        font-size: 26px;
+      }
+
+      .chart-subtitle {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 28px;
+        line-height: 1.5;
+      }
+
+      .chart-wrapper {
+        position: relative;
+        height: 380px;
+      }
+
+      .chart-wrapper-bar {
+        position: relative;
+        height: 320px;
+      }
+
+      /* Ideas Section */
+      .ideas-section {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+      }
+
+      .ideas-section h2 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .ideas-subtitle {
+        color: var(--text-secondary);
+        font-size: 15px;
+        margin-bottom: 32px;
+      }
+
+      .idea-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 20px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .idea-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        opacity: 0.03;
+        transition: opacity 0.4s ease;
+      }
+
+      .idea-card:nth-child(1)::after {
+        background: var(--accent-blue);
+      }
+      .idea-card:nth-child(2)::after {
+        background: var(--accent-purple);
+      }
+      .idea-card:nth-child(3)::after {
+        background: var(--accent-green);
+      }
+
+      .idea-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+      }
+
+      .idea-card:hover::after {
+        opacity: 0.06;
+      }
+
+      .idea-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .idea-number {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .idea-card:nth-child(1) .idea-number {
+        background: linear-gradient(
+          135deg,
+          rgba(79, 140, 255, 0.2),
+          rgba(79, 140, 255, 0.05)
+        );
+        color: var(--accent-blue);
+      }
+      .idea-card:nth-child(2) .idea-number {
+        background: linear-gradient(
+          135deg,
+          rgba(168, 85, 247, 0.2),
+          rgba(168, 85, 247, 0.05)
+        );
+        color: var(--accent-purple);
+      }
+      .idea-card:nth-child(3) .idea-number {
+        background: linear-gradient(
+          135deg,
+          rgba(16, 185, 129, 0.2),
+          rgba(16, 185, 129, 0.05)
+        );
+        color: var(--accent-green);
+      }
+
+      .idea-title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .idea-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+
+      .idea-detail {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .idea-detail-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .idea-card:nth-child(1) .idea-detail-label {
+        color: var(--accent-blue);
+      }
+      .idea-card:nth-child(2) .idea-detail-label {
+        color: var(--accent-purple);
+      }
+      .idea-card:nth-child(3) .idea-detail-label {
+        color: var(--accent-green);
+      }
+
+      .idea-detail p {
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text-secondary);
+      }
+
+      .impact-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .idea-card:nth-child(1) .impact-badge {
+        background: rgba(79, 140, 255, 0.15);
+        color: var(--accent-blue);
+      }
+      .idea-card:nth-child(2) .impact-badge {
+        background: rgba(168, 85, 247, 0.15);
+        color: var(--accent-purple);
+      }
+      .idea-card:nth-child(3) .impact-badge {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--accent-green);
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        margin-top: 64px;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 28px;
+        }
+        .chart-wrapper {
+          height: 280px;
+        }
+        .chart-wrapper-bar {
+          height: 240px;
+        }
+        .chart-card {
+          padding: 20px;
+        }
+        .idea-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="badge">Shiptivity · Module 3 Analytics</div>
+        <h1>Kanban Board Feature Analysis</h1>
+        <p>
+          分析 2018-06-02 看板功能上線前後的關鍵指標變化，並提出三個可提升 DAU
+          的改善方案
+        </p>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value">0.35</div>
+          <div class="stat-label">上線前 DAU</div>
+          <div class="stat-change">2018-02 ~ 2018-06-01</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">0.40</div>
+          <div class="stat-label">上線後 DAU</div>
+          <div class="stat-change positive">↑ 17% 提升</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">162</div>
+          <div class="stat-label">總卡片數</div>
+          <div class="stat-change">有狀態變更的卡片</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">100</div>
+          <div class="stat-label">註冊用戶數</div>
+          <div class="stat-change">不重複用戶</div>
+        </div>
+      </div>
+
+      <!-- Chart 1: DAU Trend -->
+      <div class="chart-section">
+        <div class="chart-card">
+          <h2><span class="emoji">📈</span> 每日活躍用戶趨勢 (DAU)</h2>
+          <p class="chart-subtitle">
+            紅色虛線標示 2018-06-02 看板功能上線日。上線後 DAU
+            明顯提升，從平均約 3~4 人提升至 10~15 人。
+          </p>
+          <div class="chart-wrapper">
+            <canvas id="dauChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 2: Status Change Distribution -->
+      <div class="chart-section">
+        <div class="chart-card">
+          <h2><span class="emoji">🔄</span> 卡片狀態變更次數分布</h2>
+          <p class="chart-subtitle">
+            大部分卡片僅有 1~2
+            次狀態變更，顯示使用者的操作流程較為單一，缺乏反覆迭代。
+          </p>
+          <div class="chart-wrapper-bar">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 3: Top Cards by Status Changes -->
+      <div class="chart-section">
+        <div class="chart-card">
+          <h2><span class="emoji">🏆</span> 狀態變更最多的卡片 (Top 10)</h2>
+          <p class="chart-subtitle">
+            少數卡片有較頻繁的狀態變更（3~5 次），代表這些任務有反覆調整的需求。
+          </p>
+          <div class="chart-wrapper">
+            <canvas id="topCardsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ideas Section -->
+      <div class="ideas-section">
+        <h2>💡 三個可執行的改善方案</h2>
+        <p class="ideas-subtitle">
+          基於數據洞察，以下功能方案預計能有效提升每日活躍用戶數 (DAU)
+        </p>
+
+        <!-- Idea 1 -->
+        <div class="idea-card">
+          <div class="idea-header">
+            <div class="idea-number">1</div>
+            <div class="idea-title">📬 每日任務摘要通知</div>
+          </div>
+          <div class="idea-grid">
+            <div class="idea-detail">
+              <div class="idea-detail-label">假設 (Hypothesis)</div>
+              <p>
+                DAU 雖然在功能上線後提升了 17%，但平均值仍然偏低（僅約 11
+                人/天），且有明顯的波動。這表示用戶經常「忘記」回來使用看板。透過每日摘要通知（Email
+                或 Push
+                Notification），提醒用戶待辦任務和進度，可以有效拉回不活躍的用戶。
+              </p>
+            </div>
+            <div class="idea-detail">
+              <div class="idea-detail-label">預期影響 (Expected Impact)</div>
+              <span class="impact-badge">DAU +15~25%</span>
+              <p>
+                通知可以直接觸及未登入的用戶。根據業界數據，推播通知的點擊率約為
+                3~10%，對於 100 個用戶來說，每日可額外帶回 3~10 個用戶，將 DAU
+                從 ~11 提升至 ~14。
+              </p>
+            </div>
+            <div class="idea-detail">
+              <div class="idea-detail-label">功能描述 (Feature)</div>
+              <p>
+                每天早上 9:00 自動發送摘要通知，內容包含：①目前在 backlog 和
+                in-progress 的卡片數量 ②昨天完成的卡片
+                ③一鍵直達看板的連結。用戶可在設定頁面選擇通知頻率（每日/每週/關閉）。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Idea 2 -->
+        <div class="idea-card">
+          <div class="idea-header">
+            <div class="idea-number">2</div>
+            <div class="idea-title">👥 團隊協作與 @提及功能</div>
+          </div>
+          <div class="idea-grid">
+            <div class="idea-detail">
+              <div class="idea-detail-label">假設 (Hypothesis)</div>
+              <p>
+                目前卡片的狀態變更次數很低（大多僅 1~2
+                次），這顯示看板目前是「個人使用」的工具，缺乏團隊互動。加入協作功能（@提及、卡片留言、指派任務），可以讓用戶之間形成互相通知的網絡效應，從而顯著增加用戶回訪的動力。
+              </p>
+            </div>
+            <div class="idea-detail">
+              <div class="idea-detail-label">預期影響 (Expected Impact)</div>
+              <span class="impact-badge">DAU +20~30%</span>
+              <p>
+                社交互動是最強的用戶留存驅動力。每當一個用戶在卡片上
+                @提及另一位用戶，被提及者就會收到通知並登入查看。假設每天有 5
+                個用戶各 @提及 1 人，額外帶動 2~3 個新登入，DAU 可提升至 ~14。
+              </p>
+            </div>
+            <div class="idea-detail">
+              <div class="idea-detail-label">功能描述 (Feature)</div>
+              <p>
+                在卡片詳情頁面加入留言區和 @mention
+                功能。當用戶被提及時，系統自動發送即時通知（應用內 +
+                Email）。同時新增「指派負責人」欄位，讓卡片可以分配給特定團隊成員，被指派者也會收到通知。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Idea 3 -->
+        <div class="idea-card">
+          <div class="idea-header">
+            <div class="idea-number">3</div>
+            <div class="idea-title">🎮 每週進度報告與成就系統</div>
+          </div>
+          <div class="idea-grid">
+            <div class="idea-detail">
+              <div class="idea-detail-label">假設 (Hypothesis)</div>
+              <p>
+                從資料可以看出，用戶完成任務後（卡片從 in-progress 移到
+                complete）就缺乏繼續回來的理由。加入遊戲化元素（進度報告、完成統計、連續登入獎勵），可以給予用戶正向反饋，增加黏著度，特別是對於已有使用習慣的活躍用戶。
+              </p>
+            </div>
+            <div class="idea-detail">
+              <div class="idea-detail-label">預期影響 (Expected Impact)</div>
+              <span class="impact-badge">DAU +10~15%</span>
+              <p>
+                遊戲化功能主要影響已有一定使用頻率的用戶，讓他們的回訪更穩定。預計可以降低
+                DAU 的波動性（目前最低 5、最高 23），並將平均 DAU 穩定提升至
+                ~13。週五的每週回顧郵件可額外帶回週末活躍度較低的用戶。
+              </p>
+            </div>
+            <div class="idea-detail">
+              <div class="idea-detail-label">功能描述 (Feature)</div>
+              <p>
+                新增「我的進度」Dashboard，包含：①本週完成的卡片數量（對比上週）
+                ②任務完成率的趨勢折線圖
+                ③連續活躍天數記錄（Streak）④每週五下午發送一封「Weekly
+                Review」郵件，內含本週亮點和下週待辦摘要。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Shiptivity Analytics Report · Module 3 · Generated on 2026-02-14</p>
+      </div>
+    </div>
+
+    <script>
+      // === DATA ===
+      const dauData = [
+        ["2018-02-03", 1],
+        ["2018-02-05", 1],
+        ["2018-02-08", 1],
+        ["2018-02-09", 1],
+        ["2018-02-11", 2],
+        ["2018-02-12", 2],
+        ["2018-02-14", 1],
+        ["2018-02-15", 1],
+        ["2018-02-17", 1],
+        ["2018-02-18", 1],
+        ["2018-02-19", 2],
+        ["2018-02-21", 1],
+        ["2018-02-22", 4],
+        ["2018-02-23", 1],
+        ["2018-02-24", 1],
+        ["2018-02-26", 3],
+        ["2018-02-27", 1],
+        ["2018-02-28", 3],
+        ["2018-03-01", 5],
+        ["2018-03-02", 3],
+        ["2018-03-03", 2],
+        ["2018-03-04", 2],
+        ["2018-03-05", 4],
+        ["2018-03-06", 3],
+        ["2018-03-07", 2],
+        ["2018-03-08", 2],
+        ["2018-03-09", 5],
+        ["2018-03-10", 3],
+        ["2018-03-11", 3],
+        ["2018-03-12", 3],
+        ["2018-03-13", 3],
+        ["2018-03-14", 5],
+        ["2018-03-15", 5],
+        ["2018-03-16", 2],
+        ["2018-03-17", 7],
+        ["2018-03-18", 4],
+        ["2018-03-19", 6],
+        ["2018-03-20", 3],
+        ["2018-03-21", 6],
+        ["2018-03-22", 1],
+        ["2018-03-23", 3],
+        ["2018-03-24", 6],
+        ["2018-03-25", 2],
+        ["2018-03-26", 1],
+        ["2018-03-27", 3],
+        ["2018-03-28", 4],
+        ["2018-03-29", 4],
+        ["2018-03-30", 2],
+        ["2018-03-31", 3],
+        ["2018-04-01", 2],
+        ["2018-04-02", 1],
+        ["2018-04-03", 4],
+        ["2018-04-04", 4],
+        ["2018-04-05", 4],
+        ["2018-04-06", 1],
+        ["2018-04-07", 5],
+        ["2018-04-08", 2],
+        ["2018-04-09", 2],
+        ["2018-04-10", 1],
+        ["2018-04-12", 2],
+        ["2018-04-13", 2],
+        ["2018-04-14", 5],
+        ["2018-04-15", 4],
+        ["2018-04-16", 4],
+        ["2018-04-17", 2],
+        ["2018-04-18", 2],
+        ["2018-04-19", 3],
+        ["2018-04-20", 3],
+        ["2018-04-21", 3],
+        ["2018-04-22", 1],
+        ["2018-04-23", 5],
+        ["2018-04-24", 3],
+        ["2018-04-25", 4],
+        ["2018-04-26", 3],
+        ["2018-04-27", 3],
+        ["2018-04-28", 4],
+        ["2018-04-29", 5],
+        ["2018-04-30", 3],
+        ["2018-05-01", 4],
+        ["2018-05-02", 4],
+        ["2018-05-03", 4],
+        ["2018-05-04", 3],
+        ["2018-05-05", 3],
+        ["2018-05-06", 4],
+        ["2018-05-07", 1],
+        ["2018-05-08", 4],
+        ["2018-05-09", 4],
+        ["2018-05-10", 4],
+        ["2018-05-11", 6],
+        ["2018-05-12", 4],
+        ["2018-05-13", 6],
+        ["2018-05-14", 8],
+        ["2018-05-15", 5],
+        ["2018-05-16", 7],
+        ["2018-05-17", 7],
+        ["2018-05-18", 5],
+        ["2018-05-19", 9],
+        ["2018-05-20", 6],
+        ["2018-05-21", 7],
+        ["2018-05-22", 7],
+        ["2018-05-23", 8],
+        ["2018-05-24", 3],
+        ["2018-05-25", 6],
+        ["2018-05-26", 2],
+        ["2018-05-27", 10],
+        ["2018-05-28", 7],
+        ["2018-05-29", 7],
+        ["2018-05-30", 6],
+        ["2018-05-31", 9],
+        ["2018-06-01", 7],
+        ["2018-06-02", 10],
+        ["2018-06-03", 14],
+        ["2018-06-04", 10],
+        ["2018-06-05", 11],
+        ["2018-06-06", 14],
+        ["2018-06-07", 12],
+        ["2018-06-08", 9],
+        ["2018-06-09", 9],
+        ["2018-06-10", 12],
+        ["2018-06-11", 13],
+        ["2018-06-12", 8],
+        ["2018-06-13", 13],
+        ["2018-06-14", 14],
+        ["2018-06-15", 13],
+        ["2018-06-16", 9],
+        ["2018-06-17", 10],
+        ["2018-06-18", 19],
+        ["2018-06-19", 20],
+        ["2018-06-20", 17],
+        ["2018-06-21", 8],
+        ["2018-06-22", 9],
+        ["2018-06-23", 18],
+        ["2018-06-24", 12],
+        ["2018-06-25", 14],
+        ["2018-06-26", 13],
+        ["2018-06-27", 10],
+        ["2018-06-28", 10],
+        ["2018-06-29", 12],
+        ["2018-06-30", 8],
+        ["2018-07-01", 14],
+        ["2018-07-02", 13],
+        ["2018-07-03", 14],
+        ["2018-07-04", 11],
+        ["2018-07-05", 13],
+        ["2018-07-06", 13],
+        ["2018-07-07", 10],
+        ["2018-07-08", 13],
+        ["2018-07-09", 18],
+        ["2018-07-10", 12],
+        ["2018-07-11", 12],
+        ["2018-07-12", 19],
+        ["2018-07-13", 10],
+        ["2018-07-14", 13],
+        ["2018-07-15", 14],
+        ["2018-07-16", 6],
+        ["2018-07-17", 11],
+        ["2018-07-18", 15],
+        ["2018-07-19", 15],
+        ["2018-07-20", 17],
+        ["2018-07-21", 7],
+        ["2018-07-22", 18],
+        ["2018-07-23", 12],
+        ["2018-07-24", 10],
+        ["2018-07-25", 12],
+        ["2018-07-26", 7],
+        ["2018-07-27", 12],
+        ["2018-07-28", 14],
+        ["2018-07-29", 15],
+        ["2018-07-30", 15],
+        ["2018-07-31", 15],
+        ["2018-08-01", 15],
+        ["2018-08-02", 11],
+        ["2018-08-03", 10],
+        ["2018-08-04", 15],
+        ["2018-08-05", 15],
+        ["2018-08-06", 12],
+        ["2018-08-07", 13],
+        ["2018-08-08", 13],
+        ["2018-08-09", 10],
+        ["2018-08-10", 14],
+        ["2018-08-11", 17],
+        ["2018-08-12", 11],
+        ["2018-08-13", 13],
+        ["2018-08-14", 14],
+        ["2018-08-15", 11],
+        ["2018-08-16", 15],
+        ["2018-08-17", 18],
+        ["2018-08-18", 11],
+        ["2018-08-19", 9],
+        ["2018-08-20", 16],
+        ["2018-08-21", 23],
+        ["2018-08-22", 10],
+        ["2018-08-23", 13],
+        ["2018-08-24", 8],
+        ["2018-08-25", 10],
+        ["2018-08-26", 14],
+        ["2018-08-27", 13],
+        ["2018-08-28", 11],
+        ["2018-08-29", 10],
+        ["2018-08-30", 12],
+        ["2018-08-31", 10],
+        ["2018-09-01", 13],
+        ["2018-09-02", 16],
+        ["2018-09-03", 10],
+        ["2018-09-04", 8],
+        ["2018-09-05", 17],
+        ["2018-09-06", 9],
+        ["2018-09-07", 11],
+        ["2018-09-08", 16],
+        ["2018-09-09", 12],
+        ["2018-09-10", 11],
+        ["2018-09-11", 20],
+        ["2018-09-12", 11],
+        ["2018-09-13", 12],
+        ["2018-09-14", 7],
+        ["2018-09-15", 9],
+        ["2018-09-16", 12],
+        ["2018-09-17", 9],
+        ["2018-09-18", 12],
+        ["2018-09-19", 16],
+        ["2018-09-20", 15],
+        ["2018-09-21", 15],
+        ["2018-09-22", 10],
+        ["2018-09-23", 10],
+        ["2018-09-24", 7],
+        ["2018-09-25", 12],
+        ["2018-09-26", 13],
+        ["2018-09-27", 11],
+        ["2018-09-28", 15],
+        ["2018-09-29", 10],
+        ["2018-09-30", 11],
+        ["2018-10-01", 8],
+        ["2018-10-02", 11],
+        ["2018-10-03", 7],
+        ["2018-10-04", 12],
+        ["2018-10-05", 19],
+        ["2018-10-06", 11],
+        ["2018-10-07", 13],
+        ["2018-10-08", 15],
+        ["2018-10-09", 9],
+        ["2018-10-10", 8],
+        ["2018-10-11", 8],
+        ["2018-10-12", 12],
+        ["2018-10-13", 14],
+        ["2018-10-14", 9],
+        ["2018-10-15", 14],
+        ["2018-10-16", 5],
+        ["2018-10-17", 10],
+        ["2018-10-18", 12],
+        ["2018-10-19", 9],
+        ["2018-10-20", 12],
+        ["2018-10-21", 12],
+        ["2018-10-22", 9],
+        ["2018-10-23", 9],
+        ["2018-10-24", 10],
+        ["2018-10-25", 9],
+        ["2018-10-26", 10],
+        ["2018-10-27", 6],
+        ["2018-10-28", 10],
+        ["2018-10-29", 9],
+        ["2018-10-30", 12],
+        ["2018-10-31", 12],
+        ["2018-11-01", 15],
+        ["2018-11-02", 16],
+        ["2018-11-03", 12],
+        ["2018-11-04", 10],
+        ["2018-11-05", 14],
+        ["2018-11-06", 17],
+        ["2018-11-07", 13],
+        ["2018-11-08", 15],
+        ["2018-11-09", 11],
+        ["2018-11-10", 10],
+        ["2018-11-11", 17],
+        ["2018-11-12", 6],
+        ["2018-11-13", 7],
+        ["2018-11-14", 8],
+        ["2018-11-15", 12],
+        ["2018-11-16", 14],
+        ["2018-11-17", 16],
+        ["2018-11-18", 17],
+        ["2018-11-19", 16],
+        ["2018-11-20", 15],
+        ["2018-11-21", 11],
+        ["2018-11-22", 11],
+        ["2018-11-23", 11],
+        ["2018-11-24", 8],
+        ["2018-11-25", 12],
+        ["2018-11-26", 11],
+        ["2018-11-27", 13],
+        ["2018-11-28", 16],
+        ["2018-11-29", 10],
+        ["2018-11-30", 14],
+        ["2018-12-01", 13],
+        ["2018-12-02", 16],
+        ["2018-12-03", 8],
+        ["2018-12-04", 14],
+        ["2018-12-05", 11],
+        ["2018-12-06", 10],
+        ["2018-12-07", 8],
+        ["2018-12-08", 13],
+        ["2018-12-09", 9],
+        ["2018-12-10", 14],
+        ["2018-12-11", 9],
+        ["2018-12-12", 7],
+        ["2018-12-13", 14],
+        ["2018-12-14", 9],
+        ["2018-12-15", 8],
+        ["2018-12-16", 14],
+        ["2018-12-17", 15],
+        ["2018-12-18", 9],
+        ["2018-12-19", 8],
+        ["2018-12-20", 14],
+        ["2018-12-21", 8],
+        ["2018-12-22", 10],
+        ["2018-12-23", 13],
+        ["2018-12-24", 11],
+        ["2018-12-25", 14],
+        ["2018-12-26", 10],
+        ["2018-12-27", 14],
+        ["2018-12-28", 16],
+        ["2018-12-29", 13],
+        ["2018-12-30", 8],
+        ["2018-12-31", 10],
+        ["2019-01-01", 13],
+        ["2019-01-02", 14],
+        ["2019-01-03", 12],
+        ["2019-01-04", 6],
+        ["2019-01-05", 9],
+        ["2019-01-06", 11],
+        ["2019-01-07", 11],
+        ["2019-01-08", 7],
+        ["2019-01-09", 10],
+        ["2019-01-10", 9],
+        ["2019-01-11", 10],
+        ["2019-01-12", 14],
+        ["2019-01-13", 11],
+        ["2019-01-14", 13],
+        ["2019-01-15", 8],
+        ["2019-01-16", 5],
+        ["2019-01-17", 12],
+        ["2019-01-18", 15],
+        ["2019-01-19", 7],
+        ["2019-01-20", 10],
+        ["2019-01-21", 12],
+        ["2019-01-22", 14],
+        ["2019-01-23", 7],
+        ["2019-01-24", 10],
+        ["2019-01-25", 15],
+        ["2019-01-26", 6],
+        ["2019-01-27", 7],
+        ["2019-01-28", 14],
+        ["2019-01-29", 7],
+        ["2019-01-30", 10],
+        ["2019-01-31", 8],
+        ["2019-02-01", 10],
+      ];
+
+      const topCards = [
+        ["Kutch-Mueller", 5],
+        ["Osinski Inc", 4],
+        ["O'Kon Group", 4],
+        ["Boehm, West and Oberbrunner", 4],
+        ["O'Keefe Inc", 4],
+        ["Waters, Lockman and Keebler", 3],
+        ["Hessel Group", 3],
+        ["Gerlach Inc", 3],
+        ["Breitenberg, Waelchi and Murphy", 3],
+        ["Jacobson, Mertz and Kiehn", 2],
+      ];
+
+      const statusDist = [
+        ["1 次變更", 53],
+        ["2 次變更", 100],
+        ["3+ 次變更", 9],
+      ];
+
+      // === CHART 1: DAU Trend ===
+      const launchIndex = dauData.findIndex((d) => d[0] === "2018-06-02");
+
+      const ctx1 = document.getElementById("dauChart").getContext("2d");
+      const gradient1 = ctx1.createLinearGradient(0, 0, 0, 380);
+      gradient1.addColorStop(0, "rgba(79,140,255,0.25)");
+      gradient1.addColorStop(1, "rgba(79,140,255,0)");
+
+      new Chart(ctx1, {
+        type: "line",
+        data: {
+          labels: dauData.map((d) => d[0]),
+          datasets: [
+            {
+              label: "Daily Active Users",
+              data: dauData.map((d) => d[1]),
+              borderColor: "#4f8cff",
+              backgroundColor: gradient1,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: "#4f8cff",
+              fill: true,
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: "index" },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(22,33,62,0.95)",
+              titleColor: "#f1f5f9",
+              bodyColor: "#94a3b8",
+              borderColor: "rgba(255,255,255,0.1)",
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+            },
+            annotation: {
+              annotations: {
+                launchLine: {
+                  type: "line",
+                  xMin: launchIndex,
+                  xMax: launchIndex,
+                  borderColor: "#ec4899",
+                  borderWidth: 2,
+                  borderDash: [6, 4],
+                  label: {
+                    display: true,
+                    content: "🚀 Kanban Launch (2018-06-02)",
+                    position: "start",
+                    backgroundColor: "rgba(236,72,153,0.85)",
+                    color: "#fff",
+                    font: { size: 11, weight: "600" },
+                    cornerRadius: 6,
+                    padding: { top: 4, bottom: 4, left: 8, right: 8 },
+                  },
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              ticks: {
+                color: "#64748b",
+                font: { size: 10 },
+                maxTicksLimit: 12,
+                maxRotation: 45,
+              },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              ticks: { color: "#64748b", font: { size: 11 } },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      // === CHART 2: Status Change Distribution ===
+      const ctx2 = document.getElementById("statusChart").getContext("2d");
+      new Chart(ctx2, {
+        type: "doughnut",
+        data: {
+          labels: statusDist.map((d) => d[0]),
+          datasets: [
+            {
+              data: statusDist.map((d) => d[1]),
+              backgroundColor: [
+                "rgba(79,140,255,0.8)",
+                "rgba(168,85,247,0.8)",
+                "rgba(16,185,129,0.8)",
+              ],
+              borderColor: "#16213e",
+              borderWidth: 3,
+              hoverOffset: 8,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "60%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: "#94a3b8",
+                font: { size: 13, weight: "500" },
+                padding: 24,
+                usePointStyle: true,
+                pointStyleWidth: 12,
+              },
+            },
+            tooltip: {
+              backgroundColor: "rgba(22,33,62,0.95)",
+              titleColor: "#f1f5f9",
+              bodyColor: "#94a3b8",
+              borderColor: "rgba(255,255,255,0.1)",
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: {
+                label: function (ctx) {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = ((ctx.raw / total) * 100).toFixed(1);
+                  return ` ${ctx.label}: ${ctx.raw} 張卡片 (${pct}%)`;
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // === CHART 3: Top Cards ===
+      const ctx3 = document.getElementById("topCardsChart").getContext("2d");
+      const barColors = topCards.map((_, i) => {
+        const colors = [
+          "#4f8cff",
+          "#6366f1",
+          "#8b5cf6",
+          "#a855f7",
+          "#c084fc",
+          "#d4a0ff",
+          "#e0b0ff",
+          "#ecb5ff",
+          "#f0c0ff",
+          "#f5d0ff",
+        ];
+        return colors[i] || "#94a3b8";
+      });
+
+      new Chart(ctx3, {
+        type: "bar",
+        data: {
+          labels: topCards.map((d) =>
+            d[0].length > 20 ? d[0].substring(0, 18) + "…" : d[0],
+          ),
+          datasets: [
+            {
+              label: "狀態變更次數",
+              data: topCards.map((d) => d[1]),
+              backgroundColor: barColors.map((c) => c + "cc"),
+              borderColor: barColors,
+              borderWidth: 1,
+              borderRadius: 6,
+              hoverBackgroundColor: barColors,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(22,33,62,0.95)",
+              titleColor: "#f1f5f9",
+              bodyColor: "#94a3b8",
+              borderColor: "rgba(255,255,255,0.1)",
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              ticks: { color: "#64748b", font: { size: 11 }, stepSize: 1 },
+              beginAtZero: true,
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: "#94a3b8", font: { size: 11 } },
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
